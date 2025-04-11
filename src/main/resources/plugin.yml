@@ -1,5 +1,5 @@
 name: PointKing
-main: com.tournament.PointKing
+main: dev.tori.PointKing
 version: 1.2
 api-version: 1.16
 author: tori.toriko
