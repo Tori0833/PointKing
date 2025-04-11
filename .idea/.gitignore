@@ -1,0 +1,29 @@
+*.class
+*.jar
+*.war
+*.ear
+
+*.log
+
+.idea/
+*.iml
+*.ipr
+*.iws
+
+/build/
+/out/
+/target/
+
+.DS_Store
+Thumbs.db
+
+/plugins/*
+!plugins/PointKing.jar  # Nếu m muốn giữ file jar sau khi build
+
+config.yml
+*.yml.old
+*.bak
+
+# ===== Other =====
+*.swp
+*.tmp
