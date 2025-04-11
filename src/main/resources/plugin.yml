@@ -13,7 +13,6 @@ permissions:
   pointking.use:
     description: Cho phép dùng lệnh /points
     default: true
-
   pointking.admin:
     description: Cho phép dùng lệnh admin
     default: op
