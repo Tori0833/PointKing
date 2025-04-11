@@ -30,20 +30,21 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
+      - name: Install xmllint
+        run: sudo apt-get update && sudo apt-get install -y libxml2-utils
+
       - name: Read version from pom.xml
         id: get_version
-        run: |
-          VERSION=$(xmllint --xpath "string(//project/version)" pom.xml)
-          echo "plugin_version=$VERSION" >> $GITHUB_OUTPUT
+        run: echo "version=$(xmllint --xpath 'string(//project/version)' pom.xml)" >> $GITHUB_OUTPUT
 
       - name: Build with Maven
-        run: mvn package -B
+        run: mvn clean package -B
 
       - name: Upload JAR to GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: v${{ steps.get_version.outputs.plugin_version }}
-          name: PointKing v${{ steps.get_version.outputs.plugin_version }}
-          files: target/PointKing-*.jar
+          tag_name: v${{ steps.get_version.outputs.version }}
+          name: Release v${{ steps.get_version.outputs.version }}
+          files: target/*.jar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
