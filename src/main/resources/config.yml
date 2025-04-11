@@ -1,0 +1,4 @@
+starting-points: 100
+points-stolen-on-kill: 20
+allow-check-others: false
+on-zero-points-command: "ban %player% Bạn đã hết điểm và mất quyền công dân!"
