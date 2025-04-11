@@ -20,7 +20,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: '17' # hoặc version khác nếu m xài khác
+          java-version: '17'
 
       - name: Cache Maven packages
         uses: actions/cache@v3
@@ -30,14 +30,20 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
+      - name: Read version from pom.xml
+        id: get_version
+        run: |
+          VERSION=$(xmllint --xpath "string(//project/version)" pom.xml)
+          echo "plugin_version=$VERSION" >> $GITHUB_OUTPUT
+
       - name: Build with Maven
         run: mvn package -B
 
       - name: Upload JAR to GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: v${{ github.run_number }}
-          name: Release v${{ github.run_number }}
-          files: target/*.jar
+          tag_name: v${{ steps.get_version.outputs.plugin_version }}
+          name: PointKing v${{ steps.get_version.outputs.plugin_version }}
+          files: target/PointKing-*.jar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
