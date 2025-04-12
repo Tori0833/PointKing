@@ -1,6 +1,6 @@
 name: PointKing
 main: dev.tori.PointKing
-version: 1.2
+version: ${project.version}
 api-version: 1.16
 author: tori.toriko
 commands:
