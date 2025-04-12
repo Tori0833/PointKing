@@ -84,6 +84,11 @@ public class PointsCommand implements CommandExecutor {
 
             // /points top [amount]
             if (sub.equals("top")) {
+                if (!plugin.getConfig().getBoolean("allow-check-others", true)) {
+                    sender.sendMessage(ChatColor.RED + "Lệnh này đang bị vô hiệu hóa.");
+                    return true;
+                }
+
                 int amount = 5;
                 if (args.length >= 2) {
                     try {
