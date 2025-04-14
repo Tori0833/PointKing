@@ -3,10 +3,11 @@ main: dev.tori.PointKing
 version: ${project.version}
 api-version: 1.16
 author: tori.toriko
+softdepend: [Parties,PlaceholderAPI]
 commands:
   points:
     description: Quản lý điểm
-    usage: /points <player|set|add|remove|reload|top>
+    usage: /points <player|set|add|remove|reset|reload|top|topteams>
     permission: pointking.use
     permission-message: Bạn không có quyền dùng lệnh này.
 permissions:

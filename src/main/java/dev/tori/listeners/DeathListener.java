@@ -1,49 +1,57 @@
 package dev.tori.listeners;
 
-import dev.tori.managers.PointsManager;
-import net.md_5.bungee.api.ChatColor;
-import org.bukkit.Bukkit;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
+import dev.tori.managers.*;
+import dev.tori.utils.AuditLogger;
+import dev.tori.utils.CooldownManager;
+import org.bukkit.*;
+import org.bukkit.entity.*;
+import org.bukkit.event.*;
 import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.entity.Player;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.UUID;
 
 public class DeathListener implements Listener {
-    private final JavaPlugin plugin;
-    private final PointsManager pointsManager;
+    private final PointsManager points;
+    private final CooldownManager cooldown;
+    private final AuditLogger logger;
 
-    public DeathListener(JavaPlugin plugin, PointsManager pointsManager) {
-        this.plugin = plugin;
-        this.pointsManager = pointsManager;
+    public DeathListener(PointsManager points, CooldownManager cooldown, AuditLogger logger) {
+        this.points = points;
+        this.cooldown = cooldown;
+        this.logger = logger;
     }
 
-    @EventHandler
-    public void onPlayerDeath(PlayerDeathEvent event) {
-        Player victim = event.getEntity();
+    @EventHandler(priority = EventPriority.HIGH)
+    public void onKill(PlayerDeathEvent e) {
+        Player victim = e.getEntity();
         Player killer = victim.getKiller();
+        if (killer == null || killer.equals(victim)) return;
 
-        if (killer != null && killer != victim) {
-            UUID victimUUID = victim.getUniqueId();
-            UUID killerUUID = killer.getUniqueId();
-            int taken = Math.min(pointsManager.getPoints(victimUUID), pointsManager.getStolenPoints());
+        UUID killerId = killer.getUniqueId();
 
-            pointsManager.addPoints(victimUUID, -taken);
-            pointsManager.addPoints(killerUUID, taken, true);
-            pointsManager.savePoints();
-
-            killer.sendMessage(ChatColor.GOLD + "Bạn đã nhận " + taken + " điểm vì hạ " + victim.getName());
-            victim.sendMessage(ChatColor.RED + "Bạn đã mất " + taken + " điểm vì bị hạ bởi " + killer.getName());
-
-            if (pointsManager.getPoints(victimUUID) <= 0) {
-                String command = pointsManager.getZeroPointsCommand().replace("%player%", victim.getName());
-                Bukkit.getScheduler().runTask(plugin, () ->
-                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command)
-                );
-            }
+        // Cooldown checks
+        if (cooldown.checkGlobal(killerId)) {
+            killer.sendMessage(ChatColor.RED + "Thao tác quá nhanh! Chờ " + cooldown.getRemaining(killerId, "global") + "s");
+            return;
         }
+        if (cooldown.checkPvP(killerId)) {
+            killer.sendMessage(ChatColor.RED + "Giết người quá nhanh! Chờ " + cooldown.getRemaining(killerId, "pvp") + "s");
+            return;
+        }
+
+        // Point transfer
+        int stolen = Math.min(points.getPoints(victim.getUniqueId()), points.getStolenPoints());
+        points.addPoints(victim.getUniqueId(), -stolen, true, killer);
+        points.addPoints(killerId, stolen, false, killer);
+        logger.logPointChange(killerId, stolen, "pvp_kill", killer);
+
+
+        // Set cooldowns
+        cooldown.setGlobal(killerId);
+        cooldown.setPvP(killerId);
+
+        // Messages
+        killer.sendMessage(ChatColor.GOLD + "+" + stolen + " điểm (Hạ " + victim.getName() + ")");
+        victim.sendMessage(ChatColor.RED + "-" + stolen + " điểm (Bị hạ bởi " + killer.getName() + ")");
     }
 }
-

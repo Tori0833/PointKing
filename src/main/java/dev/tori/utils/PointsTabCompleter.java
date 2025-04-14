@@ -21,6 +21,7 @@ public class PointsTabCompleter implements TabCompleter {
                 completions.add("remove");
                 completions.add("reload");
                 completions.add("top");
+                completions.add("topteams");
             }
         }
 
